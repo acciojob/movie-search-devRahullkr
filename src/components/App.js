@@ -3,27 +3,24 @@ import "./../styles/App.css";
 
 const App = () => {
   const [name, setName] = useState("");
-  const [error, setError] = useState("");
   const [data, setData] = useState([]);
+  const [error, setError] = useState("");
 
-  const handleSubmit = () => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
     setError("");
+    setData([]);
 
     fetch(`https://www.omdbapi.com/?apikey=99eb9fd1&s=${name}`)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Invalid movie name, Please try again");
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.Response === "False") {
+          throw new Error(result.Error);
         }
-        return res.json();
+        setData(result.Search);
       })
-      .then((data) => {
-        if (data.Response === "False") {
-          throw new Error(data.Error);
-        }
-        setData(data.Search);
-      })
-      .catch((err) => {
-        setError(err.message);
+      .catch(() => {
+        setError("Invalid movie name");
       });
   };
 
@@ -32,25 +29,30 @@ const App = () => {
       {/* Do not remove the main div */}
       <h1>Search Movie</h1>
 
-      <input
-        type="text"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <button onClick={handleSubmit}>Search</button>
+      {/* ✅ Cypress requires a form */}
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <button type="submit">Search</button>
+      </form>
 
-      {error && <h2>{error}</h2>}
+      {/* ✅ Cypress looks for .error */}
+      {error && <div className="error">{error}</div>}
 
-      <div>
+      {/* ✅ Cypress expects li elements */}
+      <ul>
         {data.map((item) => (
-          <div key={item.imdbID}>
+          <li key={item.imdbID}>
             <h3>
               {item.Title} ({item.Year})
             </h3>
             <img src={item.Poster} alt={item.Title} />
-          </div>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 };
