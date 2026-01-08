@@ -20,7 +20,7 @@ const App = () => {
         setData(result.Search);
       })
       .catch(() => {
-        setError("Invalid movie name");
+        setError("Invalid movie name. Please try again.");
       });
   };
 
